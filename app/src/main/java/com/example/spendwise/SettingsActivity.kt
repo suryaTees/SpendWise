@@ -40,12 +40,19 @@ fun SettingsScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF1565C0), Color(0xFFFFC107))))
-            .padding(24.dp)
+            .background(
+                Brush.verticalGradient(listOf(Color(0xFF1565C0), Color(0xFFFFC107)))
+            )
+            .padding(WindowInsets.systemBars.asPaddingValues()) //  This respects the status bar
+            .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
-        Column(horizontalAlignment = Alignment.Start) {
+        Column(
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text(
-                "Settings",
+                text = "Settings",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -54,7 +61,7 @@ fun SettingsScreen() {
 
             // Profile Section
             Text(
-                text = "👤 Profile",
+                text = "Profile",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color.White
