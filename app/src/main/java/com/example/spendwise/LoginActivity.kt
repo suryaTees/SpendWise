@@ -6,7 +6,6 @@ import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -27,36 +25,42 @@ import androidx.compose.ui.unit.sp
 import com.example.spendwise.ui.theme.SpendWiseTheme
 import com.example.spendwise.utils.validateEmail
 import com.example.spendwise.utils.validatePassword
+import com.google.firebase.auth.FirebaseAuth
 
 class LoginActivity : ComponentActivity() {
+
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize FirebaseAuth
+        auth = FirebaseAuth.getInstance()
+
         setContent {
             SpendWiseTheme {
-                LoginScreen()
+                LoginScreen(auth)
             }
         }
     }
 }
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(auth: FirebaseAuth) {
     val context = LocalContext.current
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1565C0),
-                        Color(0xFFFFC107)
-                    )
+                    colors = listOf(Color(0xFF1565C0), Color(0xFFFFC107))
                 )
             ),
         contentAlignment = Alignment.Center
@@ -67,18 +71,14 @@ fun LoginScreen() {
                 .padding(24.dp)
                 .fillMaxWidth()
         ) {
-            // ✨ Welcome Heading
-            Text(
-                text = "Welcome Back to",
-                fontSize = 22.sp,
-                color = Color.White
-            )
+            // Heading
+            Text("Welcome Back to", fontSize = 22.sp, color = Color.White)
             Text(
                 text = "SpendWise",
                 fontSize = 36.sp,
-                color = Color.White,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 2.sp,
+                color = Color.White,
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
@@ -92,14 +92,11 @@ fun LoginScreen() {
                 label = { Text("Email") },
                 isError = emailError != null,
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next
-                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                 modifier = Modifier.fillMaxWidth()
             )
-            if (emailError != null) {
-                Text(emailError!!, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+            emailError?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -115,14 +112,11 @@ fun LoginScreen() {
                 isError = passwordError != null,
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done
-                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                 modifier = Modifier.fillMaxWidth()
             )
-            if (passwordError != null) {
-                Text(passwordError!!, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+            passwordError?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -134,8 +128,25 @@ fun LoginScreen() {
                     passwordError = validatePassword(password)
 
                     if (emailError == null && passwordError == null) {
-                        Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
-                        // Navigate to Home/Main Screen
+                        isLoading = true
+                        auth.signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener { task ->
+                                isLoading = false
+                                if (task.isSuccessful) {
+                                    Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
+                                    //  Navigate to HomeActivity
+                                    context.startActivity(Intent(context, HomeActivity::class.java))
+                                    if (context is LoginActivity) {
+                                        context.finish()
+                                    }
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        task.exception?.message ?: "Login failed",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -143,18 +154,19 @@ fun LoginScreen() {
                 Text("Login")
             }
 
+            if (isLoading) {
+                Spacer(modifier = Modifier.height(12.dp))
+                CircularProgressIndicator(color = Color.White)
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
             // Register Navigation
             TextButton(onClick = {
-                val intent = Intent(context, RegisterActivity::class.java)
-                context.startActivity(intent)
+                context.startActivity(Intent(context, RegisterActivity::class.java))
             }) {
                 Text("Don't have an account? Register")
             }
         }
     }
 }
-
-
-

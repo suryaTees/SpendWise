@@ -33,6 +33,11 @@
             android:exported="true"
             android:label="Register"
             android:theme="@style/Theme.SpendWise" />
+        <activity
+            android:name=".HomeActivity"
+            android:exported="true"
+            android:label="Home"
+            android:theme="@style/Theme.SpendWise" />
     </application>
 
 </manifest>

@@ -1,5 +1,6 @@
 package com.example.spendwise
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
 import android.widget.Toast
@@ -24,20 +25,28 @@ import androidx.compose.ui.unit.sp
 import com.example.spendwise.ui.theme.SpendWiseTheme
 import com.example.spendwise.utils.validateEmail
 import com.example.spendwise.utils.validatePassword
+import com.google.firebase.auth.FirebaseAuth
 
 class RegisterActivity : ComponentActivity() {
+
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Firebase Auth
+        auth = FirebaseAuth.getInstance()
+
         setContent {
             SpendWiseTheme {
-                RegisterScreen()
+                RegisterScreen(auth)
             }
         }
     }
 }
 
 @Composable
-fun RegisterScreen() {
+fun RegisterScreen(auth: FirebaseAuth) {
     val context = LocalContext.current
 
     var email by remember { mutableStateOf("") }
@@ -47,6 +56,8 @@ fun RegisterScreen() {
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
     var confirmError by remember { mutableStateOf<String?>(null) }
+
+    var isLoading by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -64,7 +75,7 @@ fun RegisterScreen() {
                 .padding(24.dp)
                 .fillMaxWidth()
         ) {
-            // 📝 Heading
+            // Heading
             Text(
                 text = "Register Here",
                 fontSize = 32.sp,
@@ -74,7 +85,7 @@ fun RegisterScreen() {
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            // Email Input
+            // Email
             OutlinedTextField(
                 value = email,
                 onValueChange = {
@@ -95,7 +106,7 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Password Input
+            // Password
             OutlinedTextField(
                 value = password,
                 onValueChange = {
@@ -117,7 +128,7 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Confirm Password Input
+            // Confirm Password
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = {
@@ -147,13 +158,28 @@ fun RegisterScreen() {
                     confirmError = if (confirmPassword != password) "Passwords do not match" else null
 
                     if (emailError == null && passwordError == null && confirmError == null) {
-                        Toast.makeText(context, "Registration Successful", Toast.LENGTH_SHORT).show()
-                        // Navigate to LoginActivity or MainActivity
+                        isLoading = true
+                        auth.createUserWithEmailAndPassword(email, password)
+                            .addOnCompleteListener { task ->
+                                isLoading = false
+                                if (task.isSuccessful) {
+                                    Toast.makeText(context, "Registration Successful", Toast.LENGTH_SHORT).show()
+                                    // Optionally navigate to login screen
+                                    context.startActivity(Intent(context, LoginActivity::class.java))
+                                } else {
+                                    Toast.makeText(context, task.exception?.message ?: "Registration failed", Toast.LENGTH_LONG).show()
+                                }
+                            }
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Register")
+            }
+
+            if (isLoading) {
+                Spacer(modifier = Modifier.height(12.dp))
+                CircularProgressIndicator(color = Color.White)
             }
         }
     }
