@@ -43,6 +43,11 @@
             android:exported="true"
             android:label="Add Expense"
             android:theme="@style/Theme.SpendWise" />
+        <activity
+            android:name=".ViewAllExpensesActivity"
+            android:exported="true"
+            android:label="View All Expenses"
+            android:theme="@style/Theme.SpendWise" />
     </application>
 
 </manifest>

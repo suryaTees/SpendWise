@@ -89,20 +89,26 @@ fun HomeScreen() {
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { /* Navigate to Add Expense */ },
+                onClick = {
+                    context.startActivity(android.content.Intent(context, AddExpenseActivity::class.java))
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Add Expense")
             }
 
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { /* Navigate to View Expenses */ },
+                onClick = {
+                    context.startActivity(android.content.Intent(context, ViewAllExpensesActivity::class.java))
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("View All Expenses")
             }
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
