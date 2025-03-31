@@ -98,6 +98,18 @@ fun HomeScreen() {
                 Text("Add Expense")
             }
 
+            Button(
+                onClick = {
+                    context.startActivity(Intent(context, AddIncomeActivity::class.java))
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Add Income")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
