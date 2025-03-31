@@ -11,10 +11,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.spendwise.data.AppDatabase
 import com.example.spendwise.ui.theme.SpendWiseTheme
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,10 +33,31 @@ class HomeActivity : ComponentActivity() {
 
 @Composable
 fun HomeScreen() {
-    // Sample dummy data — this will later be dynamic from Room DB
-    val income = 5000.0
-    val expenses = 2750.0
-    val balance = income - expenses
+    val context = LocalContext.current
+    val expenseDao = remember { AppDatabase.getDatabase(context).expenseDao() }
+
+    var totalIncome by remember { mutableStateOf(0.0) }
+    var totalExpenses by remember { mutableStateOf(0.0) }
+    val scope = rememberCoroutineScope()
+
+    // Observe total income and expenses using LaunchedEffect + Flow
+    LaunchedEffect(Unit) {
+
+
+        scope.launch {
+            expenseDao.getTotalIncome().collectLatest { income ->
+                totalIncome = income ?: 0.0
+            }
+        }
+
+        scope.launch {
+            expenseDao.getTotalExpenses().collectLatest { expense ->
+                totalExpenses = expense ?: 0.0
+            }
+        }
+    }
+
+    val balance = totalIncome - totalExpenses
 
     Box(
         modifier = Modifier
@@ -49,7 +74,6 @@ fun HomeScreen() {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 💰 Title
             Text(
                 text = "SpendWise Dashboard",
                 fontSize = 28.sp,
@@ -58,14 +82,12 @@ fun HomeScreen() {
                 modifier = Modifier.padding(vertical = 24.dp)
             )
 
-            // 📊 Overview Cards
-            DashboardCard("Total Income", income)
-            DashboardCard("Total Expenses", expenses)
+            DashboardCard("Total Income", totalIncome)
+            DashboardCard("Total Expenses", totalExpenses)
             DashboardCard("Balance", balance)
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Navigation Buttons
             Button(
                 onClick = { /* Navigate to Add Expense */ },
                 modifier = Modifier.fillMaxWidth()
