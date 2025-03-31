@@ -138,12 +138,15 @@ fun HomeScreen() {
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { /* Navigate to Settings */ },
+                onClick = {
+                    context.startActivity(Intent(context, SettingsActivity::class.java))
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.2f))
             ) {
                 Text("Settings", color = Color.White)
             }
+
         }
     }
 }
