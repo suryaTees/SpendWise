@@ -1,5 +1,6 @@
 package com.example.spendwise
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -113,8 +114,11 @@ fun HomeScreen() {
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { /* Navigate to Statistics/Charts */ },
-                modifier = Modifier.fillMaxWidth()
+                onClick = {
+                    context.startActivity(Intent(context, StatisticsActivity::class.java))
+                },
+
+                        modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Statistics & Insights")
             }
