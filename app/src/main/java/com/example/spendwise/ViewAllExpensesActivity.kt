@@ -56,7 +56,15 @@ fun ViewAllExpensesScreen() {
             .background(Brush.verticalGradient(listOf(Color(0xFF1565C0), Color(0xFFFFC107))))
             .padding(16.dp)
     ) {
-        Column {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(listOf(Color(0xFF1565C0), Color(0xFFFFC107)))
+                )
+                .padding(16.dp)
+                .padding(WindowInsets.statusBars.asPaddingValues()), // ✅ This line fixes the notch issue
+        ) {
             Text(
                 text = "All Transactions",
                 fontSize = 28.sp,
@@ -73,6 +81,7 @@ fun ViewAllExpensesScreen() {
                 }
             }
         }
+
     }
 }
 
