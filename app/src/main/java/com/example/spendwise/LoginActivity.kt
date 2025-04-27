@@ -54,6 +54,24 @@ fun LoginScreen(auth: FirebaseAuth) {
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
+    var showGdprDialog by remember { mutableStateOf(true) } // <-- GDPR popup trigger
+
+    if (showGdprDialog) {
+        AlertDialog(
+            onDismissRequest = { },
+            confirmButton = {
+                TextButton(onClick = { showGdprDialog = false }) {
+                    Text("Accept", fontWeight = FontWeight.Bold)
+                }
+            },
+            title = { Text("Privacy Policy and GDPR Notice") },
+            text = {
+                Text(
+                    "By using SpendWise, you agree to our Privacy Policy. We value your privacy and ensure your data is handled securely in accordance with GDPR regulations."
+                )
+            }
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -71,7 +89,6 @@ fun LoginScreen(auth: FirebaseAuth) {
                 .padding(24.dp)
                 .fillMaxWidth()
         ) {
-            // Heading
             Text("Welcome Back to", fontSize = 22.sp, color = Color.White)
             Text(
                 text = "SpendWise",
@@ -82,7 +99,6 @@ fun LoginScreen(auth: FirebaseAuth) {
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            // Email Field
             OutlinedTextField(
                 value = email,
                 onValueChange = {
@@ -101,7 +117,6 @@ fun LoginScreen(auth: FirebaseAuth) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Password Field
             OutlinedTextField(
                 value = password,
                 onValueChange = {
@@ -121,7 +136,6 @@ fun LoginScreen(auth: FirebaseAuth) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Login Button
             Button(
                 onClick = {
                     emailError = validateEmail(email)
@@ -134,7 +148,6 @@ fun LoginScreen(auth: FirebaseAuth) {
                                 isLoading = false
                                 if (task.isSuccessful) {
                                     Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
-                                    //  Navigate to HomeActivity
                                     context.startActivity(Intent(context, HomeActivity::class.java))
                                     if (context is LoginActivity) {
                                         context.finish()
@@ -161,7 +174,6 @@ fun LoginScreen(auth: FirebaseAuth) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Register Navigation
             TextButton(onClick = {
                 context.startActivity(Intent(context, RegisterActivity::class.java))
             }) {

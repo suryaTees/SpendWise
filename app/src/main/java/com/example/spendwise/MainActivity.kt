@@ -2,13 +2,15 @@ package com.example.spendwise
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.MotionEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +28,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+
+    private val handler = Handler(Looper.getMainLooper())
+    private val logoutRunnable = Runnable {
+        logoutUser()
+    }
+
+    private val timeoutDuration: Long = 2 * 60 * 1000 // 5 minutes (in milliseconds)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -45,7 +55,36 @@ class MainActivity : ComponentActivity() {
             finish()
         }
     }
+
+    private fun resetLogoutTimer() {
+        handler.removeCallbacks(logoutRunnable)
+        handler.postDelayed(logoutRunnable, timeoutDuration)
+    }
+
+    private fun logoutUser() {
+        // Redirect to login screen
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
+    }
+
+    override fun onUserInteraction() {
+        super.onUserInteraction()
+        resetLogoutTimer() // Reset timer on any interaction
+    }
+
+    override fun onResume() {
+        super.onResume()
+        resetLogoutTimer()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        handler.removeCallbacks(logoutRunnable) // Stop timer when app is paused
+    }
 }
+
 
 @Composable
 fun SplashScreen() {

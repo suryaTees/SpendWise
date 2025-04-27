@@ -184,11 +184,22 @@ fun AddExpenseScreen(onBack: () -> Unit) {
                             note = note
                         )
 
+                        // Save locally to Room Database
                         CoroutineScope(Dispatchers.IO).launch {
                             expenseDao.insertExpense(expense)
                         }
 
-                        Toast.makeText(context, "$type added successfully!", Toast.LENGTH_SHORT).show()
+                        // Save to Firebase Firestore
+                        val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                        val expensesCollection = firestore.collection("expenses")
+
+                        expensesCollection.add(expense)
+                            .addOnSuccessListener {
+                                Toast.makeText(context, "$type added successfully to Firestore!", Toast.LENGTH_SHORT).show()
+                            }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(context, "Failed to save to Firestore: ${e.message}", Toast.LENGTH_LONG).show()
+                            }
 
                         // Reset form
                         title = ""
@@ -200,6 +211,7 @@ fun AddExpenseScreen(onBack: () -> Unit) {
                 ) {
                     Text("Save Entry")
                 }
+
             }
         }
     }
