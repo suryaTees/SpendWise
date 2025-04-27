@@ -7,6 +7,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,14 +33,15 @@ class AddIncomeActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SpendWiseTheme {
-                AddIncomeScreen()
+                AddIncomeScreen(onBack = { finish() })
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddIncomeScreen() {
+fun AddIncomeScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val dao = remember { AppDatabase.getDatabase(context).expenseDao() }
 
@@ -50,71 +53,89 @@ fun AddIncomeScreen() {
         SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF1565C0), Color(0xFFFFC107))))
-            .padding(24.dp)
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Add Income", fontSize = 26.sp, color = Color.White, modifier = Modifier.padding(bottom = 24.dp))
-
-            OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                label = { Text("Title") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = amount,
-                onValueChange = { amount = it },
-                label = { Text("Amount") },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = note,
-                onValueChange = { note = it },
-                label = { Text("Note (optional)") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = {
-                    if (title.isBlank() || amount.isBlank()) {
-                        Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
-                        return@Button
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Add Income") },
+                navigationIcon = {
+                    IconButton(onClick = { onBack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
-
-                    val income = Expense(
-                        title = title,
-                        amount = amount.toDoubleOrNull() ?: 0.0,
-                        type = "Income",
-                        date = date,
-                        note = note
-                    )
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        dao.insertExpense(income)
-                    }
-
-                    Toast.makeText(context, "Income added!", Toast.LENGTH_SHORT).show()
-
-                    title = ""
-                    amount = ""
-                    note = ""
                 },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Save Income")
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF1565C0),
+                    titleContentColor = Color.White
+                )
+            )
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Brush.verticalGradient(listOf(Color(0xFF1565C0), Color(0xFFFFC107))))
+                .padding(paddingValues)
+                .padding(24.dp)
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Title") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = amount,
+                    onValueChange = { amount = it },
+                    label = { Text("Amount") },
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = note,
+                    onValueChange = { note = it },
+                    label = { Text("Note (optional)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = {
+                        if (title.isBlank() || amount.isBlank()) {
+                            Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        val income = Expense(
+                            title = title,
+                            amount = amount.toDoubleOrNull() ?: 0.0,
+                            type = "Income",
+                            date = date,
+                            note = note
+                        )
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            dao.insertExpense(income)
+                        }
+
+                        Toast.makeText(context, "Income added!", Toast.LENGTH_SHORT).show()
+
+                        title = ""
+                        amount = ""
+                        note = ""
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Save Income")
+                }
             }
         }
     }
